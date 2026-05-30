@@ -133,7 +133,7 @@ jobs:
         working-directory: server/Tests/Unit
         run: |
           dotnet stryker \
-            --project ../../Src/Infrastructure/Infrastructure.csproj \
+            --project Infrastructure.csproj \
             --break-at 70 \
             --reporter "progress" \
             --reporter "html"
