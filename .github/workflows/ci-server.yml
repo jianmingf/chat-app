@@ -134,6 +134,7 @@ jobs:
         run: |
           dotnet stryker \
             --project Infrastructure.csproj \
+            --test-runner mtp \
             --break-at 70 \
             --reporter "progress" \
             --reporter "html"
