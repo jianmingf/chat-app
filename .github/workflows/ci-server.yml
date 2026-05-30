@@ -106,11 +106,41 @@ jobs:
           name: sonar-coverage
           path: ./server/Coverage/Report/SonarQube.xml
           overwrite: true
+  
+  mutation:
+    name: Run Mutation Testing
+    runs-on: ubuntu-latest
+    needs: test
+    defaults:
+      run:
+        working-directory: server
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Install Stryker.NET
+        run: dotnet tool install -g dotnet-stryker
+
+      - name: Run mutation tests
+        run: |
+          dotnet stryker \
+            --project ./Src/Application/Application.csproj \
+            --test-project ./Tests/Unit/Unit.csproj \
+            --break-at 70 \
+            --reporter "progress" \
+            --reporter "html"
 
   sonarqube:
     name: Run SonarQube Analysis
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, mutation]
 
     steps:
       - uses: actions/checkout@v4
