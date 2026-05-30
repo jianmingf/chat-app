@@ -110,10 +110,11 @@ jobs:
           path: ./server/Coverage/Report/SonarQube.xml
           overwrite: true
   
-  mutation:
-    name: Run Mutation Testing
+  mutation-infrastructure:
+    name: Run Mutation Testing - Infrastructure
     runs-on: ubuntu-latest
     needs: test
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
@@ -129,11 +130,41 @@ jobs:
       - name: Install Stryker.NET
         run: dotnet tool install -g dotnet-stryker
 
-      - name: Run mutation tests
+      - name: Run mutation tests for Infrastructure
         working-directory: server/Tests/Unit
         run: |
           dotnet stryker \
             --project Infrastructure.csproj \
+            --test-runner mtp \
+            --break-at 15 \
+            --reporter "progress" \
+            --reporter "html"
+
+  mutation-api:
+    name: Run Mutation Testing - Api
+    runs-on: ubuntu-latest
+    needs: test
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        working-directory: server
+        run: dotnet restore
+
+      - name: Install Stryker.NET
+        run: dotnet tool install -g dotnet-stryker
+
+      - name: Run mutation tests for Api
+        working-directory: server/Tests/Unit
+        run: |
+          dotnet stryker \
+            --project Api.csproj \
             --test-runner mtp \
             --break-at 70 \
             --reporter "progress" \
@@ -142,7 +173,7 @@ jobs:
   sonarqube:
     name: Run SonarQube Analysis
     runs-on: ubuntu-latest
-    needs: [test, mutation]
+    needs: [test, mutation-infrastructure, mutation-api]
 
     steps:
       - uses: actions/checkout@v4
